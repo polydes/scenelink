@@ -17,6 +17,7 @@
 	<property name="author" value="Justin Espedal" />
 	<property name="internalVersion" value="2" />
 	<property name="version" value="0.3.3" />
+	<property name="website" value="http://www.polydes.com/repo/toolset/com.polydes.scenelink" />
 	
 	<include file="../Common/build-helper.xml" as="common" />
 	
