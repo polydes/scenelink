@@ -1,0 +1,34 @@
+{
+  "group": "com.polydes",
+  "id": "com.polydes.scenelink",
+  "name": "Scene Link Extension",
+  "description": "View and access Scenes spatially.",
+  "tags": ["workflow"],
+  "type": "game",
+  "author": "Justin Espedal",
+  "website": "https://www.polydes.com/repo/toolset/com.polydes.scenelink",
+  "repository": "https://www.polydes.com/repo",
+  "target": "stencyl-4.2.0",
+  "version": "0.4.0",
+
+  "icon": "icon.png",
+
+  "toolset": {
+    "root": "toolset",
+    "src": [
+      {"type": "java", "path": "src"},
+      {"type": "res", "path": "res", "target": "res/com/polydes/scenelink"}
+    ],
+    "dependencies": [
+      "platform:com.stencyl:jide-oss",
+      "platform:com.stencyl:jide-components",
+      "platform:com.stencyl:jide-grids",
+      "platform:org.apache.commons:commons-lang3",
+      "platform:ch.qos.reload4j:reload4j",
+      "platform:commons-io:commons-io",
+      "extension:com.polydes.datastruct"
+    ],
+    "mainClass": "com.polydes.scenelink.SceneLinkExtension",
+    "internalVersion": "2"
+  }
+}
