@@ -17,6 +17,7 @@ import javax.swing.SwingUtilities;
 import com.polydes.scenelink.data.Link;
 import com.polydes.scenelink.data.LinkModel;
 
+import static com.polydes.scenelink.util.ScaleUtil.scale;
 
 public class LinkPanel extends JComponent implements PropertyChangeListener
 {
@@ -55,7 +56,7 @@ public class LinkPanel extends JComponent implements PropertyChangeListener
 		label = model.getLabel();
 		color = model.getColor();
 		drawRect = model.getPos();
-		setBounds(drawRect);
+		setBounds(scale(drawRect, page == null ? 1 : page.getZoomScale()));
 		link = model.getLink();
 		revalidate();
 		if(page != null)
@@ -74,7 +75,7 @@ public class LinkPanel extends JComponent implements PropertyChangeListener
 		label = "";
 		this.color = color;
 		this.drawRect = drawRect;
-		setBounds(drawRect);
+		setBounds(scale(drawRect, page == null ? 1 : page.getZoomScale()));
 		link = Link.createBlank();
 	}
 	
@@ -86,12 +87,13 @@ public class LinkPanel extends JComponent implements PropertyChangeListener
 	public void setParent(LinkPage page)
 	{
 		this.page = page;
+		setBounds(scale(drawRect, page == null ? 1 : page.getZoomScale()));
 	}
 	
 	public void setDrawRect(Rectangle drawRect)
 	{
 		this.drawRect = drawRect;
-		setBounds(drawRect);
+		setBounds(scale(drawRect, page == null ? 1 : page.getZoomScale()));
 	}
 	
 	public void openLink()
@@ -104,23 +106,25 @@ public class LinkPanel extends JComponent implements PropertyChangeListener
 	protected void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		
+
+		float zoom = page.getZoomScale();
+
 		if(selected)
 			g.setColor(brighter(color, 1f));
 		else if(hovered)
 			g.setColor(brighter(color, .2f));
 		else
 			g.setColor(color);
-		g.fillRect(0, 0, drawRect.width, drawRect.height);
+		g.fillRect(0, 0, (int) (zoom * drawRect.width), (int) (zoom * drawRect.height));
 		
 //		if(selected)
 //		{
 //			g.setColor(alpha(Color.WHITE, .5f));
-//			g.fillRect(0, 0, drawRect.width, drawRect.height);
+//			g.fillRect(0, 0, zoom * drawRect.width, zoom * drawRect.height);
 //		}
 		if(!label.equals(""))
 		{
-			int center = drawRect.width / 2;
+			int center = (int) (zoom * drawRect.width / 2);
 			g.setFont(linkFont);
 			int labelX = center - getStringWidth(g, label) / 2;
 			g.setColor(Color.WHITE);
@@ -143,6 +147,8 @@ public class LinkPanel extends JComponent implements PropertyChangeListener
 	@Override
 	protected void paintBorder(Graphics g)
 	{
+		float zoom = page.getZoomScale();
+
 		//why subtract by 1??
 		if(selected)
 			g.setColor(Color.WHITE);
@@ -150,12 +156,16 @@ public class LinkPanel extends JComponent implements PropertyChangeListener
 			g.setColor(darker(color, .1f));
 		else
 			g.setColor(darker(color, .2f));
+
+		Rectangle drawRect = scale(this.drawRect, zoom);
 		g.drawRect(0, 0, drawRect.width - 1, drawRect.height - 1);
 		g.drawRect(1, 1, drawRect.width - 3, drawRect.height - 3);
 	}
 	
 	public void paintHoveredBorders(Graphics g, boolean top, boolean bottom, boolean left, boolean right)
 	{
+		Rectangle drawRect = scale(this.drawRect, page.getZoomScale());
+
 		g.setColor(Color.GREEN);
 		if(top)
 			g.drawRect(0, 0, drawRect.width - 1, 1);
@@ -242,7 +252,7 @@ public class LinkPanel extends JComponent implements PropertyChangeListener
 		else if(prop.equals("pos"))
 		{
 			drawRect = model.getPos();
-			setBounds(drawRect);
+			setBounds(scale(drawRect, page == null ? 1 : page.getZoomScale()));
 		}
 		else if(prop.equals("link"))
 			link = model.getLink();

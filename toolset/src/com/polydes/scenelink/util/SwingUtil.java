@@ -1,10 +1,7 @@
 package com.polydes.scenelink.util;
 
-import java.awt.Component;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.Rectangle;
+import javax.swing.*;
+import java.awt.*;
 
 public class SwingUtil
 {
@@ -73,5 +70,25 @@ public class SwingUtil
 			}
 		}
 		return p;
+	}
+
+	public static JScrollPane getScrollPaneAncestor(Component component)
+	{
+		Container parent = component.getParent();
+
+		while(
+				!(parent == null) &&
+						!(parent instanceof JScrollPane)
+		)
+		{
+			parent = parent.getParent();
+		}
+
+		if(parent instanceof JScrollPane scrollPane)
+		{
+			return scrollPane;
+		}
+
+		return null;
 	}
 }

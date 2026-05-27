@@ -5,19 +5,13 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import com.polydes.scenelink.data.Link;
 import com.polydes.scenelink.data.LinkModel;
@@ -25,11 +19,14 @@ import com.polydes.scenelink.data.LinkPageModel;
 import com.polydes.scenelink.io.Images;
 import com.polydes.scenelink.util.ColorUtil;
 import com.polydes.scenelink.util.CursorUtil;
+import com.polydes.scenelink.util.SwingUtil;
 
 import stencyl.app.comp.util.ModifierTracker;
 
+import static com.polydes.scenelink.util.ScaleUtil.scale;
+import static com.polydes.scenelink.util.ScaleUtil.unscale;
 
-public class LinkPage extends JComponent implements MouseMotionListener, MouseListener, KeyListener, PropertyChangeListener
+public class LinkPage extends JComponent implements MouseMotionListener, MouseListener, MouseWheelListener, KeyListener, PropertyChangeListener
 {
 	private static int BORDER = 10;
 	
@@ -92,6 +89,8 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 	private LinkPanel newLink;
 	private boolean alignToGrid;
 	private boolean viewTable;
+
+	private float zoomScale = 1;
 	
 	public LinkPage(LinkPageModel model)
 	{
@@ -110,6 +109,7 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 		setFocusable(true);
 		addMouseListener(this);
 		addMouseMotionListener(this);
+		addMouseWheelListener(this);
 		addKeyListener(this);
 		
 		hoveredControl = NONE;
@@ -176,21 +176,22 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 			Dimension d = null;
 			if(viewTable)
 			{
+				Dimension gridSize = scale((Dimension) model.getGridSize().clone(), zoomScale);
 				GridTable gt;
-				absoluteWrapper.add(gt = new GridTable(GridTable.HORIZONTAL, (width - gridX) / gridCellW, model.getGridSize()));
-				gt.setBounds(new Rectangle(gridCellW + gridX, 0, width - gridX, gridCellH));
-				absoluteWrapper.add(gt = new GridTable(GridTable.VERTICAL, (height - gridY) / gridCellH, model.getGridSize()));
-				gt.setBounds(new Rectangle(0, gridCellH + gridY, gridCellW, height - gridY));
+				absoluteWrapper.add(gt = new GridTable(GridTable.HORIZONTAL, (width - gridX) / gridCellW, gridSize));
+				gt.setBounds(scale(new Rectangle(gridCellW + gridX, 0, width - gridX, gridCellH), zoomScale));
+				absoluteWrapper.add(gt = new GridTable(GridTable.VERTICAL, (height - gridY) / gridCellH, gridSize));
+				gt.setBounds(scale(new Rectangle(0, gridCellH + gridY, gridCellW, height - gridY), zoomScale));
 				absoluteWrapper.add(this);
-				setBounds(new Rectangle(gridCellW, gridCellH, width, height));
-				d = new Dimension(width + gridCellW, height + gridCellH);
+				setBounds(scale(new Rectangle(gridCellW, gridCellH, width, height), zoomScale));
+				d = scale(new Dimension(width + gridCellW, height + gridCellH), zoomScale);
 				absoluteWrapper.setBackground(gt.getBackground());
 			}
 			else
 			{
 				absoluteWrapper.add(this);
-				this.setBounds(new Rectangle(0, 0, width, height));
-				d = new Dimension(width, height);
+				this.setBounds(scale(new Rectangle(0, 0, width, height), zoomScale));
+				d = scale(new Dimension(width, height), zoomScale);
 			}
 			absoluteWrapper.setPreferredSize(d);
 			absoluteWrapper.setMinimumSize(d);
@@ -211,11 +212,16 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 			id = Math.max(id, i);
 		return ++id;
 	}
+
+	public float getZoomScale()
+	{
+		return zoomScale;
+	}
 	
 	@Override
 	public Dimension getPreferredSize()
 	{
-		return new Dimension(width + (viewTable ? 20 : 0), height + (viewTable ? 20 : 0));
+		return scale(new Dimension(width + (viewTable ? 20 : 0), height + (viewTable ? 20 : 0)), zoomScale);
 	}
 	
 	@Override
@@ -227,17 +233,17 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 		if(bgImage == null || bgImage.getWidth() < width || bgImage.getHeight() < height)
 		{
 			g.setColor(bgColor);
-			g.fillRect(0, 0, width, height);
+			g.fillRect(0, 0, (int) (zoomScale * width), (int) (zoomScale * height));
 		}
 		if(bgImage != null)
-			g.drawImage(bgImage, bgImagePos.x, bgImagePos.y, null);
-		
+			g.drawImage(bgImage, bgImagePos.x, bgImagePos.y, (int) (zoomScale * bgImage.getWidth()), (int) (zoomScale * bgImage.getHeight()), null);
+
 		//Grid
 		g.setColor(gridColor);
 		for(int x = gridX; x < width; x += gridCellW)
-			g.drawLine(x, gridY, x, height);
+			g.drawLine((int) (zoomScale * x), (int) (zoomScale * gridY), (int) (zoomScale * x), (int) (zoomScale * height));
 		for(int y = gridY; y < height; y += gridCellH)
-			g.drawLine(gridX, y, width, y);
+			g.drawLine((int) (zoomScale * gridX), (int) (zoomScale * y), (int) (zoomScale * width), (int) (zoomScale * y));
 		
 		//Links
 		for(LinkPanel l : linkPanels)
@@ -284,7 +290,7 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 
 	private Rectangle getGridRect(Point p1, Point p2)
 	{
-		Rectangle r = getRect(p1, p2);
+		Rectangle r = unscale(getRect(p1, p2), zoomScale);
 		r.translate(-gridX, -gridY);
 		int x1 = r.x / gridCellW;
 		int y1 = r.y / gridCellH;
@@ -295,8 +301,8 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 		r.width = (x2 - x1 + 1) * gridCellW;
 		r.height = (y2 - y1 + 1) * gridCellH;
 		r.translate(gridX, gridY);
-		
-		return r;
+
+		return scale(r, zoomScale);
 	}
 	
 	private Rectangle getRect(Point p1, Point p2)
@@ -316,6 +322,7 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 	public void mouseDragged(MouseEvent e)
 	{
 		Point pt = e.getPoint();
+
 		if(tool == Tool.SELECT && activeControl != NONE)
 		{
 			if(selectedPanel != null)
@@ -332,7 +339,9 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 		}
 		else if(tool == Tool.CREATE && creating)
 		{
-			newLink.setDrawRect(align() ? getGridRect(beginPress, pt) : getRect(beginPress, pt));
+			Rectangle drawnBounds = align() ? getGridRect(beginPress, pt) : getRect(beginPress, pt);
+			Rectangle logicalBounds = unscale(drawnBounds.getBounds(), zoomScale);
+			newLink.setDrawRect(logicalBounds);
 			repaint(newLink);
 		}
 		else
@@ -349,19 +358,17 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 	{
 		repaint
 		(
-			r.x - gridCellW,
-			r.y - gridCellH,
-			r.width + gridCellW * 2,
-			r.height + gridCellH * 2
+			r.x - (int) (zoomScale * gridCellW),
+			r.y - (int) (zoomScale * gridCellH),
+			r.width + (int) (zoomScale * gridCellW * 2),
+			r.height + (int) (zoomScale * gridCellH * 2)
 		);
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e)
 	{
-		Point pt = e.getPoint();
-		
-		checkHover(pt);
+		checkHover(e.getPoint());
 	}
 	
 	private void checkHover(Point pt)
@@ -600,7 +607,7 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 				{
 					creating = true;
 					Rectangle drawRect = align() ? getGridRect(pt, pt) : getRect(pt, pt);
-					newLink = new LinkPanel(this, curColor, drawRect);
+					newLink = new LinkPanel(this, curColor, unscale(drawRect, zoomScale));
 				}
 				else if(tool == Tool.SELECT)
 				{
@@ -648,7 +655,7 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 				newLink = null;
 				
 				int id = nextID();
-				LinkModel newModel = new LinkModel(id, "", curColor, pos, Link.createBlank());
+				LinkModel newModel = new LinkModel(id, "", curColor, unscale(pos, zoomScale), Link.createBlank());
 				model.getLinks().put(id, newModel);
 				
 				addLinkFromModel(newModel);
@@ -800,9 +807,10 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 		}
 		
 		repaint(activeBounds);
-		
-		selectedPanel.setDrawRect(activeBounds);
-		selectedPanel.getModel().setPos((Rectangle) activeBounds.clone());
+
+		Rectangle logicalBounds = unscale(activeBounds.getBounds(), zoomScale);
+		selectedPanel.setDrawRect(logicalBounds);
+		selectedPanel.getModel().setPos((Rectangle) logicalBounds.clone());
 	}
 	
 	public void updateDragMulti(Point pt)
@@ -836,20 +844,23 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 			}
 			
 			repaint(activeBounds);
-			
-			selected.setDrawRect(activeBounds);
-			selected.getModel().setPos((Rectangle) activeBounds.clone());
+
+			Rectangle logicalBounds = unscale(activeBounds.getBounds(), zoomScale);
+			selected.setDrawRect(logicalBounds);
+			selected.getModel().setPos((Rectangle) logicalBounds.clone());
 		}
 	}
-	
+
 	public int getClosestGridlineX(int v)
 	{
-		return (((v - gridX) + (gridCellW / 2)) / gridCellW) * gridCellW + gridX;
+		float fv = (v / zoomScale);
+		return (int) (zoomScale * ((((fv - gridX) + (gridCellW / 2)) / gridCellW) * gridCellW + gridX));
 	}
-	
+
 	public int getClosestGridlineY(int v)
 	{
-		return (((v - gridY) + (gridCellH / 2)) / gridCellH) * gridCellH + gridY;
+		float fv = v / zoomScale;
+		return (int) (zoomScale * ((((fv - gridY) + (gridCellH / 2)) / gridCellH) * gridCellH + gridY));
 	}
 	
 	public LinkPanel getLinkPanelAt(Point pt)
@@ -860,6 +871,50 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 				return p;
 		}
 		return null;
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent mwe)
+	{
+		JScrollPane scrollPane = SwingUtil.getScrollPaneAncestor(this);
+
+		if(mwe.isControlDown())
+		{
+			Point zoomPoint = unscale(mwe.getPoint(), zoomScale);
+			if(mwe.getWheelRotation() > 0)
+			{
+				zoomScale /= 1.1F;
+			}
+			else if(mwe.getWheelRotation() < 0)
+			{
+				zoomScale *= 1.1F;
+			}
+			zoomPoint = scale(zoomPoint, zoomScale);
+			refresh();
+			for(LinkPanel lp : linkPanels)
+				lp.setDrawRect(lp.getModel().getPos());
+			Rectangle screenRect = getVisibleRect();
+			screenRect.x = zoomPoint.x - screenRect.width / 2;
+			screenRect.y = zoomPoint.y - screenRect.height / 2;
+			scrollRectToVisible(screenRect);
+		}
+
+		//Let the scroll pane handle things normally
+		else
+		{
+			if(scrollPane != null)
+			{
+				scrollPane.dispatchEvent(cloneEvent(scrollPane, mwe));
+			}
+		}
+	}
+
+	private MouseWheelEvent cloneEvent(JScrollPane scrollPane, MouseWheelEvent e)
+	{
+		return new MouseWheelEvent(scrollPane, e.getID(), e
+				.getWhen(), e.getModifiers(), 1, 1, e
+				.getClickCount(), false, e.getScrollType(), e
+				.getScrollAmount(), e.getWheelRotation());
 	}
 
 	@Override
@@ -929,21 +984,22 @@ public class LinkPage extends JComponent implements MouseMotionListener, MouseLi
 				Dimension d = null;
 				if(viewTable)
 				{
+					Dimension gridSize = scale((Dimension) model.getGridSize().clone(), zoomScale);
 					GridTable gt;
-					absoluteWrapper.add(gt = new GridTable(GridTable.HORIZONTAL, (width - gridX) / gridCellW, model.getGridSize()));
-					gt.setBounds(new Rectangle(gridCellW + gridX, 0, width - gridX, gridCellH));
-					absoluteWrapper.add(gt = new GridTable(GridTable.VERTICAL, (height - gridY) / gridCellH, model.getGridSize()));
-					gt.setBounds(new Rectangle(0, gridCellH + gridY, gridCellW, height - gridY));
+					absoluteWrapper.add(gt = new GridTable(GridTable.HORIZONTAL, (width - gridX) / gridCellW, gridSize));
+					gt.setBounds(scale(new Rectangle(gridCellW + gridX, 0, width - gridX, gridCellH), zoomScale));
+					absoluteWrapper.add(gt = new GridTable(GridTable.VERTICAL, (height - gridY) / gridCellH, gridSize));
+					gt.setBounds(scale(new Rectangle(0, gridCellH + gridY, gridCellW, height - gridY), zoomScale));
 					absoluteWrapper.add(this);
-					setBounds(new Rectangle(gridCellW, gridCellH, width, height));
-					d = new Dimension(width + gridCellW, height + gridCellH);
+					setBounds(scale(new Rectangle(gridCellW, gridCellH, width, height), zoomScale));
+					d = scale(new Dimension(width + gridCellW, height + gridCellH), zoomScale);
 					absoluteWrapper.setBackground(gt.getBackground());
 				}
 				else
 				{
 					absoluteWrapper.add(this);
-					this.setBounds(new Rectangle(0, 0, width, height));
-					d = new Dimension(width, height);
+					this.setBounds(scale(new Rectangle(0, 0, width, height), zoomScale));
+					d = scale(new Dimension(width, height), zoomScale);
 				}
 				absoluteWrapper.setPreferredSize(d);
 				absoluteWrapper.setMinimumSize(d);
