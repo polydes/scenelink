@@ -1,5 +1,8 @@
 package com.polydes.scenelink.util;
 
+import stencyl.app.ext.res.AppResourceLoader;
+import stencyl.app.ext.res.AppResources;
+
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Point;
@@ -8,12 +11,9 @@ import java.util.HashMap;
 
 import javax.swing.JComponent;
 
-import com.polydes.common.res.ResourceLoader;
-import com.polydes.common.res.Resources;
-
 public class CursorUtil
 {
-	private static Resources res = ResourceLoader.getResources("com.polydes.scenelink");
+	private static AppResources res = AppResourceLoader.getResources("com.polydes.scenelink");
 	
 	private static HashMap<String, Cursor> cursors;
 	

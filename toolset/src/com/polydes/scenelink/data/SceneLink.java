@@ -1,8 +1,9 @@
 package com.polydes.scenelink.data;
 
-import stencyl.core.lib.Game;
-import stencyl.core.lib.scene.SceneModel;
-import stencyl.sw.SW;
+import com.polydes.scenelink.SceneLinkExtension;
+import stencyl.app.doc.IWorkspace;
+import stencyl.core.SWC;
+import stencyl.sw.core.lib.scene.SceneModel;
 
 public class SceneLink extends Link
 {
@@ -14,19 +15,19 @@ public class SceneLink extends Link
 	@Override
 	public void open()
 	{
-		SceneModel model = Game.getGame().getScene(id);
+		SceneModel model = SceneLinkExtension.project.getResource(SceneModel.class, id);
 		if(model == null)
 		{
 			System.out.println("Cannot open null scene: " + id);
 			return;
 		}
-		
-		SW.get().getWorkspace().openResource(model, false);
+
+		SWC.get(IWorkspace.class).openResource(model, false);
 	}
 	
 	@Override
 	public Object getModel()
 	{
-		return Game.getGame().getScene(id);
+		return SceneLinkExtension.project.getResource(SceneModel.class, id);
 	}
 }

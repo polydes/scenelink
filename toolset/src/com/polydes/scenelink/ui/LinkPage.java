@@ -26,7 +26,7 @@ import com.polydes.scenelink.io.Images;
 import com.polydes.scenelink.util.ColorUtil;
 import com.polydes.scenelink.util.CursorUtil;
 
-import misc.ModifierTracker;
+import stencyl.app.comp.util.ModifierTracker;
 
 
 public class LinkPage extends JComponent implements MouseMotionListener, MouseListener, KeyListener, PropertyChangeListener

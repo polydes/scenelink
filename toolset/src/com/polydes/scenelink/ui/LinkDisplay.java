@@ -10,8 +10,7 @@ import javax.swing.JWindow;
 import com.polydes.scenelink.data.Link;
 import com.polydes.scenelink.data.LinkPageModel;
 
-import stencyl.core.lib.scene.SceneModel;
-
+import stencyl.sw.core.lib.scene.SceneModel;
 
 public class LinkDisplay extends JButton
 {

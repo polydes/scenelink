@@ -1,7 +1,6 @@
 package com.polydes.scenelink.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -11,37 +10,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 
-import com.jidesoft.swing.PaintPanel;
-import com.polydes.common.res.ResourceLoader;
-import com.polydes.common.res.Resources;
 import com.polydes.scenelink.SceneLinkExtension;
 import com.polydes.scenelink.data.LinkPageModel;
 import com.polydes.scenelink.ui.combos.PageComboModel;
 
-import stencyl.sw.lnf.Theme;
-import stencyl.sw.util.UI;
-import stencyl.sw.util.Util;
-import stencyl.sw.util.comp.GroupToggleButton;
+import stencyl.app.comp.FlatPaintPanel;
+import stencyl.app.comp.ToolbarToggleButton;
+import stencyl.app.comp.UI;
+import stencyl.app.ext.res.AppResourceLoader;
+import stencyl.app.ext.res.AppResources;
+import stencyl.app.lnf.Theme;
+import stencyl.core.util.OS;
 
 public class MainPage extends JPanel
 {
-	private static Resources res = ResourceLoader.getResources("com.polydes.scenelink");
+	private static AppResources res = AppResourceLoader.getResources("com.polydes.scenelink");
 	
 	private static MainPage _instance = null;
 	
 	private HashMap<Integer, LinkPage> pages = null;
-	private PaintPanel topBar = null;
-	private PaintPanel leftBar = null;
+	private JPanel topBar = null;
+	private FlatPaintPanel leftBar = null;
 	private JPanel absoluteWrapper = null;
 	private PropertiesPage properties = null;
 	
@@ -73,7 +64,7 @@ public class MainPage extends JPanel
 	
 	private void createTopBar()
 	{
-		topBar = new PaintPanel();
+		topBar = UI.createButtonPanel();
 		topBar.setBorder
         (
         	BorderFactory.createCompoundBorder
@@ -83,12 +74,6 @@ public class MainPage extends JPanel
 			)
         );
         	
-		topBar.setVertical(true);
-		topBar.setStartColor(Theme.BUTTON_BAR_START);
-		topBar.setEndColor(Theme.BUTTON_BAR_END);
-		
-		topBar.setLayout(new BoxLayout(topBar, BoxLayout.X_AXIS));
-		
 		pageChooser = new JComboBox<LinkPageModel>(new PageComboModel());
 		Dimension chooserSize = new Dimension(200, pageChooser.getPreferredSize().height);
 		pageChooser.setPreferredSize(chooserSize);
@@ -127,7 +112,7 @@ public class MainPage extends JPanel
 	{
 		toolGroup = new ButtonGroup();
 		
-		leftBar = new PaintPanel();
+		leftBar = new FlatPaintPanel(FlatPaintPanel.BUTTON_BAR, FlatPaintPanel.HORIZONTAL);
 		leftBar.setBorder
         (
         	BorderFactory.createCompoundBorder
@@ -137,10 +122,6 @@ public class MainPage extends JPanel
 			)
         );
         
-		leftBar.setVertical(false);
-		leftBar.setStartColor(Color.WHITE);
-		leftBar.setEndColor(Color.LIGHT_GRAY);
-		
 		leftBar.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 3));
 		
 		AbstractButton viewButton = createToggleButton();
@@ -192,16 +173,15 @@ public class MainPage extends JPanel
 		viewButton.setSelected(true);
 	}
 	
-	private GroupToggleButton createToggleButton()
+	private JToggleButton createToggleButton()
 	{
-		final GroupToggleButton button = new GroupToggleButton(0);
-		button.switchToRolloverOnly();
-		
+		final ToolbarToggleButton button = new ToolbarToggleButton();
+
 		button.setText("");
         button.setMargin(new Insets(3, 5, 3, 5));
         button.setIconTextGap(4);
         
-        if(Util.isMacOSX() && Util.isJava6orNewer())
+        if(OS.isMacOSXForStyling())
 		{
         	button.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
 		}

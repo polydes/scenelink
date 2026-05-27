@@ -39,7 +39,7 @@ import com.polydes.scenelink.data.Link;
 import com.polydes.scenelink.ui.Reflect;
 import com.polydes.scenelink.util.ColorUtil;
 
-import stencyl.sw.util.FileHelper;
+import stencyl.core.io.FileHelper;
 
 public class XML
 {

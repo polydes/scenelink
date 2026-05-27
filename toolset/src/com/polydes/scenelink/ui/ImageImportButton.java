@@ -13,21 +13,21 @@ import javax.swing.JFileChooser;
 
 import org.apache.commons.io.FileUtils;
 
-import com.polydes.common.res.ResourceLoader;
-import com.polydes.common.res.Resources;
 import com.polydes.scenelink.SceneLinkExtension;
 import com.polydes.scenelink.io.Images;
 import com.polydes.scenelink.util.PngFilter;
 
-import misc.comp.ImagePreview;
-import stencyl.sw.SW;
-import stencyl.sw.ext.FileHandler;
-import stencyl.sw.util.Util;
-import stencyl.sw.util.filechooser.ImageFileView;
+import stencyl.app.comp.ImagePreview;
+import stencyl.app.comp.filechooser.ImageFileView;
+import stencyl.app.ext.res.AppResourceLoader;
+import stencyl.app.ext.res.AppResources;
+import stencyl.app.main.MainWindow;
+import stencyl.core.ext.FileHandler;
+import stencyl.core.util.OS;
 
 public class ImageImportButton extends JButton implements ActionListener
 {
-	private static Resources res = ResourceLoader.getResources("com.polydes.scenelink");
+	private static AppResources res = AppResourceLoader.getResources("com.polydes.scenelink");
 	
 	public static String lastImported = "";
 	
@@ -44,10 +44,10 @@ public class ImageImportButton extends JButton implements ActionListener
 	public void actionPerformed(ActionEvent e)
 	{
 		File file = null;
-		
-		if(Util.isMacOSX()) 
+
+		if(OS.isMacOSX())
 		{
-			FileDialog fc = new FileDialog(SW.get(), "Import Image");
+			FileDialog fc = new FileDialog(MainWindow.get(), "Import Image");
 			fc.setPreferredSize(new Dimension(800, 600));
 			fc.setVisible(true);
 			fc.setFilenameFilter(new PngFilter());
@@ -66,7 +66,7 @@ public class ImageImportButton extends JButton implements ActionListener
 			fc.setFileView(new ImageFileView());
 			fc.setAccessory(new ImagePreview(fc));
 			
-			int returnVal = fc.showDialog(SW.get(), "Import Image");
+			int returnVal = fc.showDialog(MainWindow.get(), "Import Image");
 		    
 			if(returnVal == JFileChooser.APPROVE_OPTION)
 		    {

@@ -18,7 +18,6 @@ import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
@@ -31,16 +30,14 @@ import javax.swing.JWindow;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 
-import stencyl.core.lib.Game;
-import stencyl.core.lib.scene.SceneModel;
-import stencyl.sw.SW;
-import stencyl.sw.lnf.Theme;
-import stencyl.sw.util.UI;
-import stencyl.sw.util.comp.GenFilterableListModel;
-import stencyl.sw.util.comp.GenQuickListFilterField;
-import stencyl.sw.util.comp.RoundedPanel;
+import stencyl.app.comp.GenFilterableListModel;
+import stencyl.app.comp.GenQuickListFilterField;
+import stencyl.app.comp.RoundedPanel;
+import stencyl.app.comp.UI;
+import stencyl.app.lnf.Theme;
+import stencyl.app.main.MainWindow;
+import stencyl.sw.core.lib.scene.SceneModel;
 
-import com.jidesoft.swing.PaintPanel;
 import com.polydes.scenelink.SceneLinkExtension;
 import com.polydes.scenelink.data.Link;
 import com.polydes.scenelink.data.LinkPageModel;
@@ -73,7 +70,7 @@ public class LinkReferenceChooser extends JWindow
 
 	public LinkReferenceChooser(JWindow owner, Link link)
 	{
-		super(owner != null ? owner : SW.get());
+		super(owner != null ? owner : MainWindow.get());
 		setFocusable(true);
 		setSize(WIDTH, HEIGHT);
 		
@@ -109,20 +106,12 @@ public class LinkReferenceChooser extends JWindow
 		(
 			link instanceof PageLink ?
 				SceneLinkExtension.getPages() :
-				Game.getGame().getScenes()
+				SceneLinkExtension.project.getResources(SceneModel.class)
 		);
 		
-		field = new GenQuickListFilterField<Object>(cm);
+		field = UI.createListFilterField(cm);
 		field.setPreferredSize(new Dimension(1, 20));
-		field.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 8));
-		field.setBackground(Color.WHITE);
-		field.setOpaque(false);
-		field.getTextField().setBackground(Color.WHITE);
-		field.getTextField().setOpaque(false);
-		field.getTextField().setForeground(Color.DARK_GRAY);
-		field.getTextField().setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		field.setWildcardEnabled(true);
-		field.setFromStart(true);
 		field.setSearchingDelay(0);
 		
 		resourceList = new ResourceList(field.getGenDisplayListModel(), cm);
@@ -190,11 +179,8 @@ public class LinkReferenceChooser extends JWindow
 			}
 		});
 		
-		RoundedPanel roundedPanel = new RoundedPanel(0, 20);
-        roundedPanel.setBackground(Color.WHITE);
-        roundedPanel.setLayout(new BorderLayout());
-        roundedPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        roundedPanel.add(field, BorderLayout.CENTER);
+		RoundedPanel roundedPanel = UI.createSearchPanel(field, 20);
+		roundedPanel.add(field, BorderLayout.CENTER);
         
         chooser = new JComboBox<String>(new ScenePageChooserModel());
 		chooser.addActionListener(new ActionListener()
@@ -204,14 +190,14 @@ public class LinkReferenceChooser extends JWindow
 			{
 				String s = "" + chooser.getSelectedItem();
 				if(s.equals("Scene"))
-					resourceList.refreshList(Game.getGame().getScenes());
+					resourceList.refreshList(SceneLinkExtension.project.getResources(SceneModel.class));
 				else if(s.equals("Page"))
 					resourceList.refreshList(SceneLinkExtension.getPages());
 			}
 		});
 		chooser.setSelectedItem((link instanceof PageLink) ? "Page" : "Scene");
         
-        PaintPanel panel = new PaintPanel();
+        JPanel panel = UI.createButtonPanel();
         panel.setBorder
         (
         	BorderFactory.createCompoundBorder
@@ -221,10 +207,6 @@ public class LinkReferenceChooser extends JWindow
 			)
         );
         	
-        panel.setVertical(true);
-        panel.setStartColor(Theme.BUTTON_BAR_START);
-        panel.setEndColor(Theme.BUTTON_BAR_END);
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.add(Box.createHorizontalStrut(5));
         panel.add(new JLabel("Link to:"));
         panel.add(Box.createHorizontalStrut(5));

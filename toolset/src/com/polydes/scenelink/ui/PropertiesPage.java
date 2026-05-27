@@ -34,7 +34,6 @@ import javax.swing.text.PlainDocument;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 
-import com.polydes.common.comp.colors.ColorDisplay;
 import com.polydes.scenelink.data.DataModel;
 import com.polydes.scenelink.data.Link;
 import com.polydes.scenelink.data.ModelProperty;
@@ -43,17 +42,17 @@ import com.polydes.scenelink.ui.combos.ImageReferenceComboModel;
 import com.polydes.scenelink.util.FloatFilter;
 import com.polydes.scenelink.util.IntegerFilter;
 
-import stencyl.sw.SW;
-import stencyl.sw.lnf.Theme;
-import stencyl.sw.util.UI;
-import stencyl.sw.util.dg.DialogPanel;
-
+import stencyl.app.comp.UI;
+import stencyl.app.comp.colors.ColorDisplay;
+import stencyl.app.comp.dg.DialogPanel;
+import stencyl.app.lnf.Theme;
+import stencyl.app.main.MainWindow;
 
 public class PropertiesPage extends DialogPanel
 {
 	public static JWindow generatePropertiesWindow(Object model)
 	{
-		final JWindow w = new JWindow(SW.get());
+		final JWindow w = new JWindow(MainWindow.get());
 		w.setFocusable(true);
 		JPanel main = new JPanel();
 		main.setBorder(BorderFactory.createRaisedBevelBorder());
@@ -508,7 +507,7 @@ public class PropertiesPage extends DialogPanel
 	
 	public JComponent createColorEditor(final Property p)
 	{
-		final ColorDisplay editor = new ColorDisplay(20, 20, (Color) readProperty(p), window);
+		final ColorDisplay editor = new ColorDisplay(20, 20, (Color) readProperty(p));
 		editor.addActionListener(new ActionListener()
 		{
 			@Override

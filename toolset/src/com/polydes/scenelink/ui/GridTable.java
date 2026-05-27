@@ -14,7 +14,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 
-import stencyl.sw.lnf.Theme;
+import stencyl.app.lnf.Theme;
 
 public class GridTable extends JPanel
 {
