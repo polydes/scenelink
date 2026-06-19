@@ -1,0 +1,23 @@
+{
+  "versions":
+  [
+    {
+      "date": "10/02/2015",
+      "changes": "Initial Repository Version.",
+      "version": "0.2.0",
+      "dependencies": "toolset-com.polydes.common-1.0.0"
+    },
+    {
+      "date": "05/01/2017",
+      "changes": "Stencyl 3.5.0 compatibility.",
+      "version": "0.3.1",
+      "dependencies": "stencyl-3.5.0"
+    },
+    {
+      "date": "08/06/2020",
+      "changes": "Stencyl 4.0.2 compatibility.",
+      "version": "0.3.3",
+      "dependencies": "stencyl-3.5.0,stencyl-4.0.2"
+    }
+  ]
+}
