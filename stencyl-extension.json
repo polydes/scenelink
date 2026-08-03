@@ -6,7 +6,7 @@
   "tags": ["workflow"],
   "type": "game",
   "author": "Justin Espedal",
-  "website": "https://www.polydes.com/repo/toolset/com.polydes.scenelink",
+  "website": "https://www.polydes.com/repo/extensions/com.polydes.scenelink",
   "repository": "https://www.polydes.com/repo",
   "target": "stencyl-4.2.0",
   "version": "0.4.0",
