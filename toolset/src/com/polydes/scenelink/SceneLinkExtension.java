@@ -2,7 +2,8 @@ package com.polydes.scenelink;
 
 import java.awt.Dimension;
 import java.awt.Point;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -21,14 +22,15 @@ import stencyl.app.ext.PageAddon.EngineExtensionPageAddon;
 import stencyl.core.ext.GameExtension;
 import stencyl.core.ext.engine.ExtensionInstanceManager.FormatUpdateSubmitter;
 import stencyl.core.io.FileHelper;
+import stencyl.core.io.Files2;
 import stencyl.core.lib.IProject;
 import stencyl.sw.app.center.GameLibrary;
 
 public class SceneLinkExtension extends GameExtension
 {
 	public static IProject project;
-	public static File pagesFolder;
-	public static File resourcesFolder;
+	public static Path pagesFolder;
+	public static Path resourcesFolder;
 	
 	public static HashMap<Integer, LinkPageModel> pages;
 
@@ -36,8 +38,7 @@ public class SceneLinkExtension extends GameExtension
 	protected void onSave() {
 		for(LinkPageModel model : pages.values())
 		{
-			String pageName = pagesFolder.getAbsolutePath() + File.separator + model.getId() + ".xml";
-			XML.wrObjectToFile(pageName, model);
+			XML.wrObjectToFile(pagesFolder.resolve(model.getId() + ".xml"), model);
 		}
 	}
 
@@ -45,17 +46,17 @@ public class SceneLinkExtension extends GameExtension
 	protected void onLoad()
 	{
 		project = getProject();
-		resourcesFolder = openFolder(new File(getDataFolder(), "resources"));
-		pagesFolder = openFolder(new File(getDataFolder(), "pages"));
+		resourcesFolder = openFolder(getDataFolder().resolve("resources"));
+		pagesFolder = openFolder(getDataFolder().resolve("pages"));
 		
 		Images.loadResourceNames();
 
 		pages = new HashMap<Integer, LinkPageModel>();
 
-		File[] pageFiles = pagesFolder.listFiles();
-		for(File f : pageFiles)
+		Path[] pageFiles = Files2.listFiles(pagesFolder);
+		for(Path f : pageFiles)
 		{
-			LinkPageModel m = (LinkPageModel) XML.rObjectFromFile(f.getAbsolutePath(), LinkPageModel.class);
+			LinkPageModel m = (LinkPageModel) XML.rObjectFromFile(f, LinkPageModel.class);
 			pages.put(m.getId(), m);
 		}
 		PageComboModel.updatePages();
@@ -75,10 +76,10 @@ public class SceneLinkExtension extends GameExtension
 		owner().getAddons().setAddon(GameLibrary.DASHBOARD_SIDEBAR_PAGE_ADDONS, scenelinkSidebarPage);
 	}
 	
-	public File openFolder(File f)
+	public Path openFolder(Path f)
 	{
-		if(!f.exists())
-			f.mkdirs();
+		if(!Files.exists(f))
+			Files2.mkdirs(f);
 		return f;
 	}
 
@@ -92,7 +93,7 @@ public class SceneLinkExtension extends GameExtension
 	@Override
 	protected int detectOldInstall()
 	{
-		return getProject().getFile("extras", "[ext] scene link").exists() ? 1 : -1;
+		return Files.exists(getProject().getPath("extras", "[ext] scene link")) ? 1 : -1;
 	}
 
 	@Override
@@ -100,7 +101,7 @@ public class SceneLinkExtension extends GameExtension
 		if(fromVersion <= 1)
 		{
 			formatUpdateQueue.add(() -> {
-				File oldExtrasFolder = getProject().getFile("extras", "[ext] scene link");
+				Path oldExtrasFolder = getProject().getPath("extras", "[ext] scene link");
 
 				FileHelper.copyDirectory(oldExtrasFolder, getExtrasFolder());
 				FileHelper.delete(oldExtrasFolder);

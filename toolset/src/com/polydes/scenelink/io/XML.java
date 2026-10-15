@@ -4,9 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -14,6 +12,8 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -87,11 +87,11 @@ public class XML
 		return builder.newDocument();
 	}
 	
-	public static void writeDocument(Document d, String url)
+	public static void writeDocument(Document d, Path url)
 	{
 		try
 		{
-			OutputStream out = new FileOutputStream(url);
+			OutputStream out = Files.newOutputStream(url);
 			
 			Result result = new StreamResult(new OutputStreamWriter(out, "utf-8"));
 			DOMSource source = new DOMSource(d);
@@ -139,13 +139,11 @@ public class XML
 		XML.e = e;
 	}
 	
-	public static void setFile(String url)
+	public static void setFile(Path url)
 	{
-		String s = "";
 		try
 		{
-			s = new File(url).toURI().toURL().toString();
-			XML.e = FileHelper.readXMLFromFile(s).getDocumentElement();
+			XML.e = FileHelper.readXMLFromFile(url).getDocumentElement();
 		}
 		catch (MalformedURLException e)
 		{
@@ -371,7 +369,7 @@ public class XML
 		return toReturn;
 	}
 	
-	public static void wrObjectToFile(String url, Object o)
+	public static void wrObjectToFile(Path url, Object o)
 	{
 		XML.saveState();
 		
@@ -449,7 +447,7 @@ public class XML
 		return top;
 	}
 	
-	public static Object rObjectFromFile(String url, Class<?> cls)
+	public static Object rObjectFromFile(Path url, Class<?> cls)
 	{
 		saveState();
 		setFile(url);

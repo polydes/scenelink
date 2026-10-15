@@ -1,15 +1,15 @@
 package com.polydes.scenelink.io;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.imageio.ImageIO;
-
 import com.polydes.scenelink.SceneLinkExtension;
 import com.polydes.scenelink.ui.combos.ImageReferenceComboModel;
+import stencyl.core.io.Files2;
+import stencyl.core.util.gfx.ImageUtil;
 
 public class Images
 {
@@ -32,11 +32,11 @@ public class Images
 		if(name.equals(""))
 			return null;
 		
-		File imgPath = new File(SceneLinkExtension.resourcesFolder, name + ".png");
+		Path imgPath = SceneLinkExtension.resourcesFolder.resolve(name + ".png");
 		
 		try
 		{
-			return ImageIO.read(imgPath);
+			return ImageUtil.read(imgPath);
 		}
 		catch (IOException e)
 		{
@@ -53,7 +53,7 @@ public class Images
 	public static void loadResourceNames()
 	{
 		resourceNames = new ArrayList<String>();
-		for(String s : SceneLinkExtension.resourcesFolder.list())
+		for(String s : Files2.list(SceneLinkExtension.resourcesFolder))
 		{
 			if(s.endsWith(".png"))
 				s = s.substring(0, s.length() - 4);

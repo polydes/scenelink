@@ -4,14 +4,13 @@ import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-
-import org.apache.commons.io.FileUtils;
 
 import com.polydes.scenelink.SceneLinkExtension;
 import com.polydes.scenelink.io.Images;
@@ -24,6 +23,8 @@ import stencyl.app.ext.res.AppResources;
 import stencyl.app.main.MainWindow;
 import stencyl.core.ext.FileHandler;
 import stencyl.core.util.OS;
+
+import static stencyl.core.util.PathHelper.filenameOf;
 
 public class ImageImportButton extends JButton implements ActionListener
 {
@@ -43,7 +44,7 @@ public class ImageImportButton extends JButton implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		File file = null;
+		Path file = null;
 
 		if(OS.isMacOSX())
 		{
@@ -54,7 +55,7 @@ public class ImageImportButton extends JButton implements ActionListener
 			
 			if(fc.getFile() != null)
 			{
-				file = new File(fc.getDirectory(), fc.getFile());
+				file = Path.of(fc.getDirectory(), fc.getFile());
 			}
 		}
 		
@@ -70,7 +71,7 @@ public class ImageImportButton extends JButton implements ActionListener
 		    
 			if(returnVal == JFileChooser.APPROVE_OPTION)
 		    {
-		        file = fc.getSelectedFile();
+		        file = fc.getSelectedFile().toPath();
 		    }
 		}
 
@@ -87,14 +88,14 @@ public class ImageImportButton extends JButton implements ActionListener
 	public static FileHandler imageHandler = new FileHandler()
 	{
 		@Override
-		public void handleFile(File f)
+		public void handleFile(Path f)
 		{
 			try
 			{
-				String name = f.getName();
+				String name = filenameOf(f);
 				String noext = name.substring(0, name.length() - 4);
 				String forcedlowercase = noext + ".png";
-				FileUtils.copyFile(f, new File(SceneLinkExtension.resourcesFolder, forcedlowercase));
+				Files.copy(f, SceneLinkExtension.resourcesFolder.resolve(forcedlowercase));
 				Images.loadResourceNames();
 				lastImported = noext;
 			}
