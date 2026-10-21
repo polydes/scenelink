@@ -1,3 +1,7 @@
+# 0.5.0 (2026-10-21)
+
+- Fixes for Stencyl 4.3.0 beta (b13010)
+
 # 0.4.0 (2026-05-27)
 
 - Fixes for Stencyl 4.2.0
